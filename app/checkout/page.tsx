@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ShieldCheck, Loader2, CreditCard, Truck, Smartphone, Building } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Script from 'next/script'; // Import Script for Razorpay
 
 const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
 const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
@@ -17,7 +18,6 @@ export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
   const [storeSettings, setStoreSettings] = useState<any>(null);
 
   const [formData, setFormData] = useState({
@@ -27,10 +27,10 @@ export default function CheckoutPage() {
     phone: '',
     address: '',
     city: '',
-    state: 'Meghalaya', 
+    state: 'Meghalaya',
     pincode: '',
   });
-  
+
   const [paymentMethod, setPaymentMethod] = useState('upi');
 
   useEffect(() => {
@@ -46,24 +46,68 @@ export default function CheckoutPage() {
     fetchSettings();
   }, []);
 
+  // --- RAZORPAY LOGIC START ---
+  const handlePayment = async () => {
+    try {
+      // 1. Create the order on your server
+      const res = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total }),
+      });
+      const order = await res.json();
+
+      if (!order.id) throw new Error("Failed to create Razorpay order");
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Lec Delights",
+        description: "Payment for Lec Delights Snacks",
+        order_id: order.id,
+        handler: function (response: any) {
+          // This code runs ONLY if payment succeeds
+          console.log("Payment Success:", response.razorpay_payment_id);
+          clearCart();
+          router.push('/'); // Or a success page
+          alert("Payment Successful! Order Confirmed.");
+        },
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: { color: "#7fae45" }, // Matching your green brand color
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      alert("Payment initialization failed. Please try again.");
+    }
+  };
+  // --- RAZORPAY LOGIC END ---
+
   if (!mounted || !storeSettings) return (
     <div className="min-h-screen bg-[#fafaf9] pt-40 pb-24 flex justify-center">
-        <Loader2 className="animate-spin text-[var(--color-primary)] w-10 h-10" />
+      <Loader2 className="animate-spin text-[var(--color-primary)] w-10 h-10" />
     </div>
   );
 
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  
   const taxRate = (storeSettings.tax_rate || 5) / 100;
   const taxAmount = Math.round(subtotal * taxRate);
 
   let shippingCost = 0;
   if (formData.state === 'Meghalaya') {
-    shippingCost = storeSettings.shipping_local || 50; 
+    shippingCost = storeSettings.shipping_local || 50;
   } else if (['Assam', 'Manipur', 'Nagaland', 'Tripura', 'Mizoram', 'Arunachal Pradesh'].includes(formData.state)) {
-    shippingCost = storeSettings.shipping_regional || 80; 
+    shippingCost = storeSettings.shipping_regional || 80;
   } else {
-    shippingCost = storeSettings.shipping_national || 120; 
+    shippingCost = storeSettings.shipping_national || 120;
   }
 
   const freeShippingLimit = storeSettings.free_shipping_threshold || 1500;
@@ -89,7 +133,7 @@ export default function CheckoutPage() {
       city: formData.city,
       state: formData.state,
       pincode: formData.pincode,
-      items: items, 
+      items: items,
       subtotal: subtotal,
       tax: taxAmount,
       shipping: shippingCost,
@@ -107,24 +151,21 @@ export default function CheckoutPage() {
       return;
     }
 
-    // 2. Ping our Next.js API to send the Customer Receipt
+    // 2. Send Email
     try {
-      // We send 'savedOrder' so the email has the actual database ID attached!
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(savedOrder),
       });
     } catch (emailError) {
-      console.error("Order saved, but email failed to send:", emailError);
+      console.error("Order saved, but email failed:", emailError);
     }
 
     setIsProcessing(false);
-
-    // 3. Complete!
-    alert(`Order Confirmed!\n\n(Simulated ${paymentMethod.toUpperCase()} redirect for now).`);
-    clearCart();
-    router.push('/');
+    
+    // 3. Trigger Real Payment
+    await handlePayment();
   };
 
   if (items.length === 0) {
@@ -144,14 +185,15 @@ export default function CheckoutPage() {
 
   return (
     <div className="bg-[#fafaf9] min-h-screen pt-32 pb-24">
+      {/* ADD SCRIPT HERE */}
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      
       <div className="max-w-7xl mx-auto px-6">
-        
         <Link href="/products" className="inline-flex items-center gap-2 text-gray-500 hover:text-[var(--color-primary)] font-bold text-sm mb-8 transition-colors uppercase tracking-widest">
           <ChevronLeft className="w-4 h-4" /> Back to Shop
         </Link>
 
         <div className="flex flex-col lg:flex-row gap-12">
-          
           <div className="w-full lg:w-3/5 space-y-8">
             <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-sm">
               <h2 className="text-3xl font-serif font-bold text-[var(--color-foreground)] mb-8">Shipping Details</h2>
@@ -211,11 +253,9 @@ export default function CheckoutPage() {
 
             <div className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-gray-100 shadow-sm">
               <h2 className="text-2xl font-serif font-bold text-[var(--color-foreground)] mb-6">Payment Method</h2>
-              <p className="text-sm text-gray-500 mb-6">All transactions are secure and encrypted.</p>
-
               <div className="space-y-4">
                 <label className={`flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'upi' ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' : 'border-gray-100 hover:border-gray-200'}`}>
-                  <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="w-5 h-5 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-gray-300" />
+                  <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="w-5 h-5 text-[var(--color-primary)]" />
                   <div className="ml-4 flex items-center gap-3">
                     <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-100 shadow-sm"><Smartphone className="w-5 h-5 text-gray-600"/></div>
                     <div>
@@ -224,31 +264,8 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </label>
-
-                <label className={`flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'card' ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' : 'border-gray-100 hover:border-gray-200'}`}>
-                  <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="w-5 h-5 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-gray-300" />
-                  <div className="ml-4 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-100 shadow-sm"><CreditCard className="w-5 h-5 text-gray-600"/></div>
-                    <div>
-                      <span className="block font-bold text-gray-800">Credit / Debit Card</span>
-                      <span className="block text-xs text-gray-500">Visa, Mastercard, RuPay</span>
-                    </div>
-                  </div>
-                </label>
-
-                <label className={`flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === 'netbanking' ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' : 'border-gray-100 hover:border-gray-200'}`}>
-                  <input type="radio" name="payment" value="netbanking" checked={paymentMethod === 'netbanking'} onChange={() => setPaymentMethod('netbanking')} className="w-5 h-5 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-gray-300" />
-                  <div className="ml-4 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-100 shadow-sm"><Building className="w-5 h-5 text-gray-600"/></div>
-                    <div>
-                      <span className="block font-bold text-gray-800">Net Banking</span>
-                      <span className="block text-xs text-gray-500">All major Indian banks supported</span>
-                    </div>
-                  </div>
-                </label>
               </div>
             </div>
-
           </div>
 
           <div className="w-full lg:w-2/5">
@@ -263,7 +280,6 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-grow">
                       <h4 className="font-bold text-[var(--color-foreground)] line-clamp-1 text-sm">{item.name}</h4>
-                      {item.variant && <p className="text-xs text-gray-500">{item.variant}</p>}
                       <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                     </div>
                     <p className="font-bold text-[var(--color-foreground)]">₹{item.price * item.quantity}</p>
@@ -281,18 +297,12 @@ export default function CheckoutPage() {
                   <span className="font-bold text-gray-800">₹{taxAmount}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span className="flex flex-col">
-                    <span>Shipping</span>
-                    <span className="text-xs text-[var(--color-primary)] font-bold">{formData.state} Delivery</span>
-                  </span>
+                   <span className="flex flex-col">
+                     <span>Shipping</span>
+                     <span className="text-xs text-[var(--color-primary)] font-bold">{formData.state} Delivery</span>
+                   </span>
                   <span className="font-bold text-gray-800">{shippingCost === 0 ? 'Free' : `₹${shippingCost}`}</span>
                 </div>
-                
-                {shippingCost > 0 && subtotal < freeShippingLimit && (
-                  <p className="text-xs text-right text-gray-400 italic">
-                    Add ₹{freeShippingLimit - subtotal} more for Free Shipping!
-                  </p>
-                )}
               </div>
 
               <div className="flex justify-between items-center border-t border-gray-100 pt-6 mb-8">
@@ -309,13 +319,8 @@ export default function CheckoutPage() {
                 {isProcessing ? <Loader2 className="animate-spin w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
                 {isProcessing ? 'Processing securely...' : `Pay ₹${total}`}
               </button>
-
-              <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-widest">
-                <CreditCard className="w-4 h-4" /> 100% Secure Checkout
-              </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
