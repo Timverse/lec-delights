@@ -1,25 +1,35 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 
+// CORRECT: Use the NAMES of the variables you set in Vercel settings
+// These labels act like nicknames for your secret keys.
 const razorpay = new Razorpay({
-  key_id: process.env.rzp_test_Sjhz6gNRlUxnai!,
-  key_secret: process.env.RGPD3383hOqWbG6kdZRQhypm!,
+  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
 export async function POST(req: Request) {
   try {
-    const { amount } = await req.json(); // amount in INR (e.g., 500)
-    
+    const body = await req.json();
+    const amount = body.amount;
+
+    // Razorpay requires the amount in 'paise' (100 paise = 1 Rupee)
+    // We use Math.round to avoid any floating-point math issues.
     const options = {
-      amount: amount * 100, // Convert ₹ to paise (Razorpay standard)
+      amount: Math.round(amount * 100), 
       currency: "INR",
       receipt: "receipt_" + Math.random().toString(36).substring(7),
     };
 
     const order = await razorpay.orders.create(options);
+    
+    // This sends the order ID back to your frontend so the popup can open
     return NextResponse.json(order);
-  } catch (error) {
-    console.error("Razorpay Error:", error);
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+  } catch (error: any) {
+    console.error("Razorpay API Error:", error);
+    return NextResponse.json(
+      { error: "Failed to create order", details: error.message }, 
+      { status: 500 }
+    );
   }
 }
