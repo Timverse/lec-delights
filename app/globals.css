@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  /* The clean canvas for your site */
+  --color-background: #fafaf9;
+  
+  /* The dark text for high contrast */
+  --color-foreground: #171717;
+  
+  /* The new Premium Banana Gold for buttons and accents! */
+  --color-primary: #eab308;
+}
+
+@layer base {
+  html, body {
+    background-color: var(--color-background) !important;
+    color: var(--color-foreground);
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Target high-end typography for headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif; 
+  }
+}
+
+@layer utilities {
+  /* Replaced @apply with standard CSS for Tailwind v4 compatibility */
+  .glass-nav {
+    background-color: rgb(255 255 255 / 0.4);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgb(255 255 255 / 0.2);
+  }
+
+  .hover-lift {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-0.5rem);
+    box-shadow: 0 20px 40px -15px rgba(234, 179, 8, 0.15); /* Updated the shadow to have a subtle gold tint! */
+  }
+}
