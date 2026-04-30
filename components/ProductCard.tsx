@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useCartStore } from '../store/cartStore';
 
 export default function ProductCard({ product }: { product: any }) {
-  const addToCart = useCartStore((state) => state.addToCart);
+  const addToCart = useCartStore((state: any) => state.addToCart);
 
   return (
     <article className="bg-white rounded-[2rem] p-6 hover-lift border border-gray-100/50 flex flex-col relative group">
