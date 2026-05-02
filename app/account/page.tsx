@@ -7,16 +7,25 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Session } from '@supabase/supabase-js';
 
 // Use environment variables for security, with your keys as fallbacks
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vyqwkijpuehlqwkspdwc.supabase.co';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+interface Order {
+  id: string;
+  total: number;
+  status: string;
+  created_at: string;
+  user_id: string;
+}
+
 export default function MyAccount() {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   
   // Auth Form State
   const [name, setName] = useState(''); // NEW: Added Name field for Sign Up
@@ -24,6 +33,20 @@ export default function MyAccount() {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  const fetchOrders = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching orders:', error);
+    } else {
+      setOrders(data || []);
+    }
+  };
 
   useEffect(() => {
     // 1. Check current session
@@ -42,20 +65,6 @@ export default function MyAccount() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const fetchOrders = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching orders:', error);
-    } else {
-      setOrders(data || []);
-    }
-  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,17 +103,17 @@ export default function MyAccount() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fafaf9]">
-        <Loader2 className="w-10 h-10 animate-spin text-[var(--color-primary)]" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="flex-grow pt-40 pb-24 px-6 max-w-6xl mx-auto w-full">
+      <main className="grow pt-40 pb-24 px-6 max-w-6xl mx-auto w-full">
         {!session ? (
           /* --- LOGIN / SIGNUP VIEW --- */
           <div className="max-w-md mx-auto bg-white p-10 md:p-12 rounded-[3rem] shadow-2xl shadow-gray-200/40 border border-gray-50">
@@ -129,7 +138,7 @@ export default function MyAccount() {
                     type="text" 
                     value={name} 
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full p-4 bg-gray-50 rounded-2xl border-none text-base outline-none focus:ring-2 ring-[var(--color-primary)] transition-all" 
+                    className="w-full p-4 bg-gray-50 rounded-2xl border-none text-base outline-none focus:ring-2 ring-primary transition-all" 
                     placeholder="John Doe"
                     required={isSignUp}
                   />
@@ -144,7 +153,7 @@ export default function MyAccount() {
                   type="email" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-4 bg-gray-50 rounded-2xl border-none text-base outline-none focus:ring-2 ring-[var(--color-primary)] transition-all" 
+                  className="w-full p-4 bg-gray-50 rounded-2xl border-none text-base outline-none focus:ring-2 ring-primary transition-all" 
                   placeholder="name@example.com"
                   required
                 />
@@ -157,7 +166,7 @@ export default function MyAccount() {
                   type="password" 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-4 bg-gray-50 rounded-2xl border-none text-base outline-none focus:ring-2 ring-[var(--color-primary)] transition-all" 
+                  className="w-full p-4 bg-gray-50 rounded-2xl border-none text-base outline-none focus:ring-2 ring-primary transition-all" 
                   placeholder="••••••••"
                   required
                   minLength={6}
@@ -166,7 +175,7 @@ export default function MyAccount() {
               
               <button 
                 disabled={isAuthLoading}
-                className="w-full bg-[var(--color-primary)] text-white py-5 rounded-2xl font-bold text-lg hover:brightness-110 transition-all shadow-xl shadow-[var(--color-primary)]/20 flex items-center justify-center gap-3 disabled:opacity-50"
+                className="w-full bg-primary text-white py-5 rounded-2xl font-bold text-lg hover:brightness-110 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 disabled:opacity-50"
               >
                 {isAuthLoading && <Loader2 className="w-5 h-5 animate-spin" />}
                 {isSignUp ? 'Create Account' : 'Sign In'}
@@ -175,7 +184,7 @@ export default function MyAccount() {
 
             <button 
               onClick={() => setIsSignUp(!isSignUp)}
-              className="w-full mt-8 text-sm font-bold text-gray-400 hover:text-[var(--color-primary)] transition-colors uppercase tracking-widest"
+              className="w-full mt-8 text-sm font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-widest"
             >
               {isSignUp ? 'Already have an account? Sign In' : "New here? Create an account"}
             </button>
@@ -185,8 +194,8 @@ export default function MyAccount() {
           <div className="space-y-12">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8 bg-white p-8 rounded-[2.5rem] border border-gray-50 shadow-sm">
               <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-[var(--color-primary)]/10 rounded-[2rem] flex items-center justify-center shrink-0">
-                  <User className="w-10 h-10 text-[var(--color-primary)]" />
+                <div className="w-20 h-20 bg-primary/10 rounded-4xl flex items-center justify-center shrink-0">
+                  <User className="w-10 h-10 text-primary" />
                 </div>
                 <div>
                   {/* Greeting the user by their name if they set it during signup */}
@@ -207,7 +216,7 @@ export default function MyAccount() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               <div className="lg:col-span-2 space-y-8">
                 <h2 className="text-2xl font-serif font-bold flex items-center gap-3 px-2">
-                  <Package className="w-6 h-6 text-[var(--color-primary)]" />
+                  <Package className="w-6 h-6 text-primary" />
                   Your Order History
                 </h2>
 
@@ -217,7 +226,7 @@ export default function MyAccount() {
                        <ShoppingBag className="w-10 h-10 text-gray-200" />
                     </div>
                     <p className="text-gray-400 font-serif text-xl italic mb-8">No snacks on your list yet...</p>
-                    <Link href="/products" className="inline-block bg-[var(--color-primary)] text-white px-10 py-4 rounded-full font-bold shadow-lg shadow-[var(--color-primary)]/20 hover:scale-105 transition-all">
+                    <Link href="/products" className="inline-block bg-primary text-white px-10 py-4 rounded-full font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all">
                       Start Shopping
                     </Link>
                   </div>
@@ -245,7 +254,7 @@ export default function MyAccount() {
                           }`}>
                             {order.status}
                           </span>
-                          <div className="hidden sm:flex w-12 h-12 bg-gray-50 rounded-2xl items-center justify-center group-hover:bg-[var(--color-primary)] group-hover:text-white transition-all">
+                          <div className="hidden sm:flex w-12 h-12 bg-gray-50 rounded-2xl items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
                             <ChevronRight className="w-5 h-5" />
                           </div>
                         </div>
@@ -265,7 +274,7 @@ export default function MyAccount() {
                     </div>
                     <div>
                       <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-2">Support</p>
-                      <Link href="/contact" className="text-[var(--color-primary)] font-bold hover:underline">Help with an order</Link>
+                      <Link href="/contact" className="text-primary font-bold hover:underline">Help with an order</Link>
                     </div>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Lock, LogOut } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import AdminDashboard from '@/components/AdminDashboard'; // Updated import here!
+import { Session } from '@supabase/supabase-js';
 
 // Initialize Supabase
 const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
@@ -12,7 +13,7 @@ const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function AdminPage() {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(true);
@@ -56,7 +57,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -66,10 +67,10 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl max-w-md w-full">
-          <div className="w-16 h-16 bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-serif font-bold text-center mb-8 text-[var(--color-foreground)]">Admin Access</h1>
+          <h1 className="text-2xl font-serif font-bold text-center mb-8 text-foreground">Admin Access</h1>
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -79,7 +80,7 @@ export default function AdminPage() {
                 required 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 focus:border-[var(--color-primary)] outline-none" 
+                className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 focus:border-primary outline-none" 
                 placeholder="admin@lecdelights.com" 
               />
             </div>
@@ -90,7 +91,7 @@ export default function AdminPage() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 focus:border-[var(--color-primary)] outline-none" 
+                className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 focus:border-primary outline-none" 
                 placeholder="••••••••" 
               />
             </div>
@@ -100,7 +101,7 @@ export default function AdminPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-[var(--color-primary)] text-white py-4 rounded-xl font-bold hover:bg-[#7fae45] transition-colors mt-4 disabled:opacity-50"
+              className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-[#7fae45] transition-colors mt-4 disabled:opacity-50"
             >
               {loading ? 'Logging in...' : 'Sign In'}
             </button>
@@ -118,7 +119,7 @@ export default function AdminPage() {
       <main className="pt-32 px-6 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
           <div className="text-center md:text-left">
-            <h1 className="text-4xl font-serif font-bold mb-2 text-[var(--color-foreground)]">Store Admin</h1>
+            <h1 className="text-4xl font-serif font-bold mb-2 text-foreground">Store Admin</h1>
             <p className="text-gray-500">Logged in securely as {session.user.email}</p>
           </div>
           
