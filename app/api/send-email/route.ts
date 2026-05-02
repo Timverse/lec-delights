@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { supabase } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const order = await request.json();
