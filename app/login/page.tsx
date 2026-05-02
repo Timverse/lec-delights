@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Loader2, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,15 +49,16 @@ export default function LoginPage() {
         });
         router.push('/account');
       }
-    } catch (error: any) {
-      toast.error("Authentication Failed", { description: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred';
+      toast.error("Authentication Failed", { description: message });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-[#fafaf9] min-h-screen pt-40 pb-24 px-6 flex items-center justify-center">
+    <div className="bg-background min-h-screen pt-40 pb-24 px-6 flex items-center justify-center">
       <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-[2.5rem] shadow-xl border border-gray-100">
         
         <div className="text-center mb-10">
@@ -78,7 +79,7 @@ export default function LoginPage() {
                 <input 
                   required={!isLogin} type="text"
                   value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-                  className="w-full p-4 pl-12 bg-gray-50 rounded-2xl border outline-none focus:border-[var(--color-primary)] transition-all" 
+                  className="w-full p-4 pl-12 bg-gray-50 rounded-2xl border outline-none focus:border-primary transition-all" 
                   placeholder="John Doe" 
                 />
               </div>
@@ -92,7 +93,7 @@ export default function LoginPage() {
               <input 
                 required type="email"
                 value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
-                className="w-full p-4 pl-12 bg-gray-50 rounded-2xl border outline-none focus:border-[var(--color-primary)] transition-all" 
+                className="w-full p-4 pl-12 bg-gray-50 rounded-2xl border outline-none focus:border-primary transition-all" 
                 placeholder="john@example.com" 
               />
             </div>
@@ -105,7 +106,7 @@ export default function LoginPage() {
               <input 
                 required type="password" minLength={6}
                 value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
-                className="w-full p-4 pl-12 bg-gray-50 rounded-2xl border outline-none focus:border-[var(--color-primary)] transition-all" 
+                className="w-full p-4 pl-12 bg-gray-50 rounded-2xl border outline-none focus:border-primary transition-all" 
                 placeholder="••••••••" 
               />
             </div>
@@ -113,7 +114,7 @@ export default function LoginPage() {
 
           <button 
             disabled={isLoading} type="submit" 
-            className="w-full bg-[var(--color-primary)] text-white py-4 rounded-2xl font-bold hover:bg-[#7fae45] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[var(--color-primary)]/20 mt-4"
+            className="w-full bg-primary text-white py-4 rounded-2xl font-bold hover:bg-[#7fae45] transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 mt-4"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
             {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
@@ -125,7 +126,7 @@ export default function LoginPage() {
           <button 
             type="button" 
             onClick={() => setIsLogin(!isLogin)} 
-            className="font-bold text-[var(--color-primary)] hover:underline"
+            className="font-bold text-primary hover:underline"
           >
             {isLogin ? 'Sign up' : 'Log in'}
           </button>
