@@ -99,7 +99,13 @@ export default function AdminDashboard() {
       if (settings.resend_from_email !== undefined) setResendFromEmail(settings.resend_from_email || '');
     }
 
-    const { data: ordersData } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    // --- VERCEL FIX: Filter out Failed Payments from Admin Orders View ---
+    const { data: ordersData } = await supabase
+      .from('orders')
+      .select('*')
+      .neq('payment_status', 'failed') // Added rule to hide failed checkouts
+      .order('created_at', { ascending: false });
+      
     if (ordersData) setOrders(ordersData);
     
     setIsLoading(false);
