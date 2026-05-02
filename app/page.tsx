@@ -4,9 +4,6 @@ import HeroSlider from '@/components/HeroSlider';
 import TrustBar from '@/components/TrustBar'; 
 import { supabase } from '@/lib/supabase';
 
-import HeroSlider from '@/components/HeroSlider';
-import TrustBar from '@/components/TrustBar'; 
-
 // Bypass cache to always show the freshest products and cards
 export const revalidate = 0; 
 
