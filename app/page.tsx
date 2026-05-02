@@ -1,8 +1,15 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import HeroSlider from '@/components/HeroSlider';
 import TrustBar from '@/components/TrustBar'; 
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// --- VERCEL FIX: Safer Supabase Initialization ---
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Bypass cache to always show the freshest products and cards
 export const revalidate = 0; 
@@ -69,10 +76,10 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 2. TRUST BAR - Placed here to validate the brand before they shop */}
+      {/* 2. TRUST BAR */}
       <TrustBar />
 
-      {/* 3. OUR PRODUCTS SECTION (Updated to use Admin slots) */}
+      {/* 3. OUR PRODUCTS SECTION */}
       <section className="bg-white py-26 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-5xl font-serif font-bold text-gray-900 mb-4">New Arrivals</h2>
@@ -114,7 +121,6 @@ export default async function Home() {
               </div>
             ))}
             
-            {/* Fallback if slots are empty */}
             {newArrivals.length === 0 && (
               <p className="col-span-3 text-center text-gray-400 italic py-10">
                 Check back soon for new treats!
@@ -140,7 +146,6 @@ export default async function Home() {
             return (
               <div key={card.id} className="group flex flex-col md:flex-row items-center gap-10 bg-white p-10 md:p-14 rounded-[3rem] border border-gray-50 shadow-sm hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-500">
                 
-                {/* Image Section */}
                 <div className="shrink-0 w-32 h-32 rounded-[2rem] bg-[#fafaf9] flex items-center justify-center p-4 relative overflow-hidden shadow-inner">
                   {card.image_urls?.[0] && (
                     <Image 
@@ -153,7 +158,6 @@ export default async function Home() {
                   )}
                 </div>
                 
-                {/* Text & Button Section */}
                 <div className="flex-grow space-y-6 text-center md:text-left">
                   <h3 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 leading-tight">
                     {card.title}
@@ -177,16 +181,8 @@ export default async function Home() {
               </div>
             );
           })}
-          
-          {featureCards?.length === 0 && (
-            <div className="col-span-full py-24 text-center text-gray-300 font-sans italic bg-white rounded-[3rem] border-2 border-dashed border-gray-100">
-              New features coming soon...
-            </div>
-          )}
-
         </div>
       </section>
-
     </div>
   );
 }
