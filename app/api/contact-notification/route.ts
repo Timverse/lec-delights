@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { supabase } from '@/lib/supabase';
 
+// --- VERCEL FIX: Tell Vercel NOT to prerender this dynamic API route ---
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     // 2. Fetch the API key you saved in the Admin Dashboard!
