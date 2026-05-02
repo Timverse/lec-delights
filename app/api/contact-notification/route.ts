@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createClient } from '@supabase/supabase-js';
-
-// 1. Initialize Supabase so we can read your Admin Dashboard settings
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/lib/supabase';
 
 export async function POST(req: Request) {
   try {

@@ -1,15 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import Image from 'next/image';
+import HeroSlider from '@/components/HeroSlider';
+import TrustBar from '@/components/TrustBar'; 
+import { supabase } from '@/lib/supabase';
+
 import HeroSlider from '@/components/HeroSlider';
 import TrustBar from '@/components/TrustBar'; 
 
 // Bypass cache to always show the freshest products and cards
 export const revalidate = 0; 
-
-const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function Home() {
   const { data: heroImages } = await supabase.from('hero_images').select('*').order('created_at', { ascending: true });

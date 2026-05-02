@@ -1,14 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { CheckCircle2, Package, Truck, Clock, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-
-const supabase = createClient(
-  'https://vyqwkijpuehlqwkspdwc.supabase.co',
-  'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo'
-);
 
 export default function OrderStatusPage({ params }: { params: { id: string } }) {
   const [order, setOrder] = useState<any>(null);

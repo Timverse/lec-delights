@@ -1,17 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ChevronLeft, Minus, Plus, Loader2, AlertCircle } from 'lucide-react';
 import AddToCartButton from '@/components/AddToCartButton';
 import ProductReviews from '@/components/ProductReviews'; // NEW: Imported the Reviews component
-
-const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function ProductPage() {
   const params = useParams(); 

@@ -1,15 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { Trash2, Plus, Loader2, X, Edit, Upload, Calculator, ListPlus, Image as ImageIcon, Settings, PackageSearch, CheckCircle2, Truck, Percent, Package, ShoppingBag, MapPin, Mail, KeyRound, Sparkles } from 'lucide-react';
 import AddProductForm from './AddProductForm';
 import AddFeatureCardForm from './AddFeatureCardForm'; 
 import Image from 'next/image';
-
-const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/lib/supabase';
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<any[]>([]);

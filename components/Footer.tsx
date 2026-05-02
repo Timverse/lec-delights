@@ -2,12 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
-
-const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/lib/supabase';
 
 export default function Footer() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);

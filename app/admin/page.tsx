@@ -1,16 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { Lock, LogOut } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import AdminDashboard from '@/components/AdminDashboard'; // Updated import here!
+import AdminDashboard from '@/components/AdminDashboard';
 import { Session } from '@supabase/supabase-js';
-
-// Initialize Supabase
-const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/lib/supabase';
 
 export default function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);

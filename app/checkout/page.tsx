@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/cartStore';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { ChevronLeft, ShieldCheck, Loader2, Truck, Smartphone, CheckCircle2, Lock, CreditCard, Banknote } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -32,10 +32,6 @@ declare global {
 }
 import { toast } from 'sonner';
 import LoadingOverlay from '@/components/LoadingOverlay'; 
-
-const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface StoreSettings {
   tax_rate: number;

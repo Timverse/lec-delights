@@ -1,13 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Plus, ShoppingBag } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+
 
 export const revalidate = 0; 
-
-const supabaseUrl = 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function ProductsPage() {
   const { data: products } = await supabase

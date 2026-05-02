@@ -2,12 +2,7 @@
 
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vyqwkijpuehlqwkspdwc.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from '@/lib/supabase';
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
