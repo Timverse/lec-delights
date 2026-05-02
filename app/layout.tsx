@@ -4,13 +4,23 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CartDrawer from '@/components/CartDrawer';
+import { Toaster } from 'sonner'; // Added for Toast Notifications
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
+const inter = Inter({ 
+  subsets: ['latin'], 
+  variable: '--font-inter',
+  display: 'swap', 
+});
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  variable: '--font-playfair',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'Lec Delights',
-  description: 'A one-stop for the delicacies of Meghalaya!',
+  title: 'Lec Delights | Premium Meghalaya Delicacies',
+  description: 'Authentic home-style snacks and delicacies from the heart of Meghalaya.',
 };
 
 export default function RootLayout({
@@ -19,15 +29,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      {/* Added explicit background, text color, and antialiasing for a premium feel */}
-      <body className={`${inter.variable} ${playfair.variable} font-sans flex flex-col min-h-screen bg-[var(--color-background)] text-[var(--color-foreground)] antialiased`}>
+    // We attach the font variables to the HTML tag so everything inside can use them
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <body className="font-sans flex flex-col min-h-screen bg-[#fafaf9] text-gray-900 antialiased">
         
-        {/* These elements will appear once on every single page automatically */}
+        {/* Toast notifications will float at the top center of every page */}
+        <Toaster position="top-center" richColors closeButton />
+
         <CartDrawer />
         <Navbar />
         
-        {/* This is  the individual page content goes */}
         <main className="flex-grow">
           {children}
         </main>

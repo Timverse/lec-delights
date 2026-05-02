@@ -80,7 +80,7 @@ export default function AdminPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 focus:border-[var(--color-primary)] outline-none" 
-                placeholder="admin@gardenfresko.com" 
+                placeholder="admin@lecdelights.com" 
               />
             </div>
             <div>

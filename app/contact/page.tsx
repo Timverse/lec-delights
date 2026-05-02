@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase Client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vyqwkijpuehlqwkspdwc.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_dx3ou74Ln8ygmQ6bPHdNvw_v4tuuRfo';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,15 +36,40 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate a network request (Here you would eventually link it to Supabase or an email API like Resend)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '', consent: false });
-    
-    // Reset success message after 5 seconds
-    setTimeout(() => setIsSuccess(false), 5000);
+    try {
+      // 1. Send the actual data to Supabase (Database Backup)
+      const { error } = await supabase.from('contact_messages').insert([
+        {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+        }
+      ]);
+
+      if (error) throw error;
+
+      // 2. Ping the API route to trigger the Resend email notification
+      await fetch('/api/contact-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      // 3. Show success state and clear form
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '', consent: false });
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => setIsSuccess(false), 5000);
+
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      alert("Failed to send message. Please try again later or email us directly.");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,7 +99,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-bold text-[var(--color-foreground)] mb-1">Phone</h3>
                   <p className="text-gray-500 hover:text-[var(--color-primary)] transition-colors cursor-pointer">
-                    +91 8132003424
+                    +91 70057 52278
                   </p>
                 </div>
               </div>
@@ -80,7 +111,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-bold text-[var(--color-foreground)] mb-1">Email</h3>
                   <p className="text-gray-500 hover:text-[var(--color-primary)] transition-colors cursor-pointer">
-                    gardenfresko@gmail.com
+                    lecdelights@gmail.com
                   </p>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface CartItem {
   id: string;
@@ -16,7 +16,8 @@ interface CartStore {
   toggleCart: () => void;
   setIsOpen: (isOpen: boolean) => void;
   addItem: (item: CartItem) => void;
-  removeItem: (id: string) => void;
+  removeItem: (id: string, variant?: string) => void; // Fixed to handle variants
+  updateQuantity: (id: string, variant: string | undefined, quantity: number) => void;
   clearCart: () => void;
 }
 
@@ -33,26 +34,44 @@ export const useCartStore = create<CartStore>()(
       // Cart Logic
       addItem: (item) =>
         set((state) => {
-          const existing = state.items.find((i) => i.id === item.id && i.variant === item.variant);
+          // Check for both ID and Variant match
+          const existing = state.items.find(
+            (i) => i.id === item.id && i.variant === item.variant
+          );
+          
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.id === item.id && i.variant === item.variant ? { ...i, quantity: i.quantity + item.quantity } : i
+                i.id === item.id && i.variant === item.variant 
+                  ? { ...i, quantity: i.quantity + item.quantity } 
+                  : i
               ),
             };
           }
           return { items: [...state.items, item] };
         }),
         
-      removeItem: (id) =>
+      removeItem: (id, variant) =>
         set((state) => ({
-          items: state.items.filter((i) => i.id !== id),
+          items: state.items.filter(
+            (i) => !(i.id === id && i.variant === variant)
+          ),
+        })),
+
+      updateQuantity: (id, variant, quantity) =>
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id === id && item.variant === variant 
+              ? { ...item, quantity: Math.max(1, quantity) } 
+              : item
+          ),
         })),
         
       clearCart: () => set({ items: [] }),
     }),
     {
-      name: 'garden-fresko-cart',
+      name: 'lec-delights-cart', // Unique key for LocalStorage
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

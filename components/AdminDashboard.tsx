@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Trash2, Plus, Loader2, X, Edit, Upload, Calculator, ListPlus, Image as ImageIcon, Settings, PackageSearch, CheckCircle2, Truck, Percent, Package, ShoppingBag, MapPin, Mail, KeyRound } from 'lucide-react';
+import { Trash2, Plus, Loader2, X, Edit, Upload, Calculator, ListPlus, Image as ImageIcon, Settings, PackageSearch, CheckCircle2, Truck, Percent, Package, ShoppingBag, MapPin, Mail, KeyRound, Sparkles } from 'lucide-react';
 import AddProductForm from './AddProductForm';
 import AddFeatureCardForm from './AddFeatureCardForm'; 
 import Image from 'next/image';
@@ -33,6 +33,10 @@ export default function AdminDashboard() {
   const [featureCards, setFeatureCards] = useState<any[]>([]);
   const [showAddCardForm, setShowAddCardForm] = useState(false);
   
+  // --- NEW: ARRIVALS STATE ---
+  const [newArrivals, setNewArrivals] = useState<any[]>([]);
+  const [isUpdatingArrivals, setIsUpdatingArrivals] = useState(false);
+
   // Orders State
   const [orders, setOrders] = useState<any[]>([]);
 
@@ -67,8 +71,17 @@ export default function AdminDashboard() {
 
   const fetchAllData = async () => {
     setIsLoading(true);
+    
+    // Fetch Products
     const { data: prodData } = await supabase.from('products').select('*').order('created_at', { ascending: false });
     if (prodData) setProducts(prodData);
+    
+    // Fetch New Arrivals slots
+    const { data: arrivalsData } = await supabase
+      .from('new_arrivals')
+      .select('*, products(id, name)')
+      .order('slot_number', { ascending: true });
+    if (arrivalsData) setNewArrivals(arrivalsData);
     
     const { data: heroData } = await supabase.from('hero_images').select('*').order('created_at', { ascending: true });
     if (heroData) setHeroImages(heroData);
@@ -118,6 +131,27 @@ export default function AdminDashboard() {
       alert("Error saving settings: " + error.message);
     } finally {
       setIsUpdatingSettings(false);
+    }
+  };
+
+  // --- UPDATE NEW ARRIVAL SLOT ---
+  const handleUpdateNewArrival = async (slotNumber: number, productId: string) => {
+    setIsUpdatingArrivals(true);
+    try {
+      const { error } = await supabase
+        .from('new_arrivals')
+        .upsert(
+          { slot_number: slotNumber, product_id: productId || null },
+          { onConflict: 'slot_number' }
+        );
+
+      if (error) throw error;
+      alert(`Slot ${slotNumber} updated successfully!`);
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsUpdatingArrivals(false);
     }
   };
 
@@ -561,6 +595,47 @@ export default function AdminDashboard() {
             </div>
           ))}
           {featureCards.length === 0 && <p className="text-gray-400 italic text-center py-6">No feature cards added yet.</p>}
+        </div>
+      </div>
+
+      {/* --- NEW ARRIVALS SHOWCASE SECTION --- */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3 mb-6">
+          <Sparkles className="text-orange-500 w-7 h-7" />
+          <h2 className="text-2xl font-serif font-bold">New Arrivals Showcase</h2>
+        </div>
+        <p className="text-sm text-gray-500 mb-8">Select the 3 products you want to feature in the "New Arrivals" section on the Home Page.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((slot) => {
+            const currentItem = newArrivals.find(a => a.slot_number === slot);
+            return (
+              <div key={slot} className="bg-gray-50 p-6 rounded-2xl border border-gray-100 flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Slot 0{slot}</span>
+                  {isUpdatingArrivals && <Loader2 className="w-4 h-4 animate-spin text-[var(--color-primary)]" />}
+                </div>
+                
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-gray-700">Featured Product:</p>
+                  <p className="text-lg font-serif font-bold text-[var(--color-primary)] truncate">
+                    {currentItem?.products?.name || "Empty Slot"}
+                  </p>
+                </div>
+
+                <select 
+                  className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-[var(--color-primary)] cursor-pointer"
+                  value={currentItem?.product_id || ""}
+                  onChange={(e) => handleUpdateNewArrival(slot, e.target.value)}
+                >
+                  <option value="">Choose a product...</option>
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+            );
+          })}
         </div>
       </div>
 

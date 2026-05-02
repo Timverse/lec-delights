@@ -69,7 +69,7 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          <span className="text-3xl md:text-4xl font-serif font-black text-[var(--color-foreground)] tracking-tight">
+          <span className="text-2xl font-sans font-black tracking-tight text-gray-900 uppercase">
             Lec Delights
           </span>
         </Link>

@@ -1,18 +1,36 @@
 'use client';
 
 import { useCartStore } from '@/store/cartStore';
-import { X, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Trash2, ShoppingBag, Trash } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function CartDrawer() {
-  const { items, isOpen, toggleCart, removeItem } = useCartStore();
+  const { items, isOpen, toggleCart, removeItem, clearCart } = useCartStore();
 
-  // If the drawer isn't open, we push it off-screen
   const drawerClass = isOpen ? 'translate-x-0' : 'translate-x-full';
   const overlayClass = isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none';
 
   const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  // --- SMART DELETE LOGIC ---
+  const handleClearCart = () => {
+    // Non-tech friendly confirmation
+    const confirmed = window.confirm("Your cart is full of goodies! Are you sure you want to remove everything?");
+    
+    if (confirmed) {
+      clearCart();
+      toast.error("Cart cleared", {
+        description: "Don't leave hungry! Your items have been removed.",
+      });
+    }
+  };
+
+  const handleRemoveItem = (id: string, name: string) => {
+    removeItem(id);
+    toast.info(`${name} removed from cart`);
+  };
 
   return (
     <>
@@ -40,21 +58,33 @@ export default function CartDrawer() {
         <div className="flex-grow overflow-y-auto p-6 space-y-6">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
-              <ShoppingBag className="w-16 h-16 opacity-20" />
-              <p>Your cart is empty</p>
+              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
+                <ShoppingBag className="w-10 h-10 opacity-20" />
+              </div>
+              <p className="font-bold text-gray-300 uppercase tracking-widest text-xs">Your bag is empty</p>
+              <button 
+                onClick={toggleCart}
+                className="text-[var(--color-primary)] font-bold hover:underline"
+              >
+                Go find some snacks
+              </button>
             </div>
           ) : (
             items.map((item, index) => (
-              <div key={index} className="flex gap-4 bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                <div className="w-20 h-20 relative bg-white rounded-xl overflow-hidden shrink-0 border border-gray-100">
-                  <Image src={item.image || '/placeholder.png'} alt={item.name} fill unoptimized className="object-cover" />
+              <div key={index} className="flex gap-4 bg-white p-3 rounded-2xl border border-gray-100 group transition-all hover:border-[var(--color-primary)]/20">
+                <div className="w-20 h-20 relative bg-gray-50 rounded-xl overflow-hidden shrink-0 border border-gray-100">
+                  <Image src={item.image || '/placeholder.png'} alt={item.name} fill unoptimized className="object-cover group-hover:scale-105 transition-transform" />
                 </div>
                 <div className="flex-grow flex flex-col justify-center">
                   <h4 className="font-bold text-sm text-gray-800 line-clamp-1">{item.name}</h4>
-                  {item.variant && <p className="text-xs text-gray-500">{item.variant}</p>}
-                  <p className="text-sm font-bold text-[var(--color-primary)] mt-1">₹{item.price} <span className="text-gray-400 font-normal">x {item.quantity}</span></p>
+                  {item.variant && <p className="text-xs text-gray-500 uppercase tracking-tighter font-bold">{item.variant}</p>}
+                  <p className="text-sm font-bold text-[var(--color-primary)] mt-1">₹{item.price} <span className="text-gray-400 font-normal ml-1">x {item.quantity}</span></p>
                 </div>
-                <button onClick={() => removeItem(item.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg self-center transition-colors">
+                <button 
+                  onClick={() => handleRemoveItem(item.id, item.name)} 
+                  className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl self-center transition-all"
+                  title="Remove Item"
+                >
                   <Trash2 className="w-5 h-5" />
                 </button>
               </div>
@@ -64,18 +94,34 @@ export default function CartDrawer() {
 
         {/* Footer / Checkout */}
         {items.length > 0 && (
-          <div className="p-6 border-t border-gray-100 bg-gray-50">
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-gray-500 font-bold">Subtotal</span>
-              <span className="text-2xl font-bold text-gray-800">₹{subtotal}</span>
+          <div className="p-8 border-t border-gray-100 bg-white">
+            <div className="flex justify-between items-end mb-8">
+              <div className="space-y-1">
+                <span className="text-xs text-gray-400 font-bold uppercase tracking-[0.2em]">Subtotal</span>
+                <p className="text-3xl font-serif font-bold text-gray-900">₹{subtotal}</p>
+              </div>
+              
+              {/* CLEAR CART BUTTON */}
+              <button 
+                onClick={handleClearCart}
+                className="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-600 transition-colors uppercase tracking-widest pb-1"
+              >
+                <Trash className="w-3.5 h-3.5" />
+                Clear All
+              </button>
             </div>
+
             <Link 
               href="/checkout" 
-              onClick={toggleCart} // Close drawer when clicking checkout
-              className="w-full block text-center bg-[var(--color-primary)] text-white py-4 rounded-xl font-bold hover:bg-[#7fae45] transition-all shadow-lg shadow-[var(--color-primary)]/20"
+              onClick={toggleCart}
+              className="w-full block text-center bg-gray-900 text-white py-5 rounded-[1.5rem] font-bold text-lg hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95"
             >
               Proceed to Checkout
             </Link>
+            
+            <p className="text-center text-[10px] text-gray-400 mt-6 font-bold uppercase tracking-[0.2em]">
+              Secure payment via Razorpay
+            </p>
           </div>
         )}
       </div>
