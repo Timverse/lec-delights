@@ -99,13 +99,12 @@ export default function AdminDashboard() {
       if (settings.resend_from_email !== undefined) setResendFromEmail(settings.resend_from_email || '');
     }
 
-    // --- VERCEL FIX: Filter out Failed Payments from Admin Orders View ---
+    // --- NEW FIX: Fetch Orders, but strictly hide 'failed' payments! ---
     const { data: ordersData } = await supabase
       .from('orders')
       .select('*')
-      .neq('payment_status', 'failed') // Added rule to hide failed checkouts
+      .neq('payment_status', 'failed') // <--- This line hides the ghost checkouts
       .order('created_at', { ascending: false });
-      
     if (ordersData) setOrders(ordersData);
     
     setIsLoading(false);
@@ -560,7 +559,7 @@ export default function AdminDashboard() {
               </div>
               <div className="flex gap-2">
                 <button onClick={() => openEditModal(p)} className="p-3 text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-600 hover:text-white transition-all"><Edit className="w-5 h-5" /></button>
-                <button onClick={() => handleDelete(p.id, p.name)} className="p-3 text-red-500 bg-red-50 rounded-xl hover:bg-red-500 hover:text-white transition-all"><Trash2 className="w-5 h-5" /></button>
+                <button onClick={() => handleDelete(p.id, p.name)} className="p-3 text-red-500 bg-red-50 rounded-xl hover:bg-red-50 hover:text-white transition-all"><Trash2 className="w-5 h-5" /></button>
               </div>
             </div>
           ))}
