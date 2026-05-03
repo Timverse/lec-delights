@@ -99,13 +99,28 @@ export default function AdminDashboard() {
       if (settings.resend_from_email !== undefined) setResendFromEmail(settings.resend_from_email || '');
     }
 
-    // --- NEW FIX: Fetch Orders, but strictly hide 'failed' payments! ---
+    // --- BULLETPROOF ORDER FILTER ---
     const { data: ordersData } = await supabase
       .from('orders')
       .select('*')
-      .neq('payment_status', 'failed') // <--- This line hides the ghost checkouts
       .order('created_at', { ascending: false });
-    if (ordersData) setOrders(ordersData);
+      
+    if (ordersData) {
+      const validOrders = ordersData.filter(order => {
+        const method = (order.payment_method || '').toUpperCase();
+        const status = (order.payment_status || '').toLowerCase();
+
+        // 1. If it's an ONLINE order, ONLY show it if payment was successful
+        if (method === 'ONLINE' || method === 'RAZORPAY' || method === 'UPI' || method === 'CARD') {
+          return status === 'paid' || status === 'success' || status === 'completed';
+        }
+
+        // 2. If it is Cash on Delivery, show it (as long as it wasn't explicitly failed/cancelled)
+        return status !== 'failed' && status !== 'cancelled';
+      });
+
+      setOrders(validOrders);
+    }
     
     setIsLoading(false);
   };
