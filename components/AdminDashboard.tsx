@@ -14,6 +14,7 @@ export default function AdminDashboard() {
   
   // --- STORE SETTINGS STATE ---
   const [taxRate, setTaxRate] = useState('5');
+  const [shippingJowai, setShippingJowai] = useState('30'); // NEW: Jowai Shipping
   const [shippingLocal, setShippingLocal] = useState('50');
   const [shippingRegional, setShippingRegional] = useState('80');
   const [shippingNational, setShippingNational] = useState('120');
@@ -89,12 +90,12 @@ export default function AdminDashboard() {
     if (settings) {
       setLogoUrl(settings.logo_url);
       if (settings.tax_rate !== undefined) setTaxRate(settings.tax_rate.toString());
+      if (settings.shipping_jowai !== undefined) setShippingJowai(settings.shipping_jowai.toString()); // NEW: Jowai Fetch
       if (settings.shipping_local !== undefined) setShippingLocal(settings.shipping_local.toString());
       if (settings.shipping_regional !== undefined) setShippingRegional(settings.shipping_regional.toString());
       if (settings.shipping_national !== undefined) setShippingNational(settings.shipping_national.toString());
       if (settings.free_shipping_threshold !== undefined) setFreeShippingThreshold(settings.free_shipping_threshold.toString());
       
-      // LOAD NEW EMAIL SETTINGS
       if (settings.resend_api_key !== undefined) setResendApiKey(settings.resend_api_key || '');
       if (settings.resend_from_email !== undefined) setResendFromEmail(settings.resend_from_email || '');
     }
@@ -134,12 +135,13 @@ export default function AdminDashboard() {
       await supabase.from('site_settings').upsert({
         id: 'global_config',
         tax_rate: parseFloat(taxRate) || 0,
+        shipping_jowai: parseInt(shippingJowai) || 0, // NEW: Jowai Save
         shipping_local: parseInt(shippingLocal) || 0,
         shipping_regional: parseInt(shippingRegional) || 0,
         shipping_national: parseInt(shippingNational) || 0,
         free_shipping_threshold: parseInt(freeShippingThreshold) || 0,
-        resend_api_key: resendApiKey,          // SAVE API KEY
-        resend_from_email: resendFromEmail,    // SAVE FROM EMAIL
+        resend_api_key: resendApiKey,
+        resend_from_email: resendFromEmail,
         updated_at: new Date()
       });
       alert("Store Settings Updated Successfully!");
@@ -404,8 +406,13 @@ export default function AdminDashboard() {
           <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-4">
              <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4"><Truck className="w-4 h-4 text-[var(--color-primary)]" /> Shipping Rates</h3>
              <div className="grid grid-cols-2 gap-4">
+               {/* NEW: Jowai Shipping Input */}
                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Local (Meghalaya) ₹</label>
+                  <label className="block text-xs font-bold text-[var(--color-primary)] uppercase mb-2">Jowai (Hyper-Local) ₹</label>
+                  <input value={shippingJowai} onChange={e => setShippingJowai(e.target.value.replace(/\D/g, ''))} className="w-full p-4 bg-white rounded-xl border border-gray-200 outline-none focus:border-[var(--color-primary)]" placeholder="30" />
+               </div>
+               <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Meghalaya (Outside Jowai) ₹</label>
                   <input value={shippingLocal} onChange={e => setShippingLocal(e.target.value.replace(/\D/g, ''))} className="w-full p-4 bg-white rounded-xl border border-gray-200 outline-none focus:border-[var(--color-primary)]" placeholder="50" />
                </div>
                <div>
@@ -416,7 +423,7 @@ export default function AdminDashboard() {
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">National (Rest of India) ₹</label>
                   <input value={shippingNational} onChange={e => setShippingNational(e.target.value.replace(/\D/g, ''))} className="w-full p-4 bg-white rounded-xl border border-gray-200 outline-none focus:border-[var(--color-primary)]" placeholder="120" />
                </div>
-               <div>
+               <div className="col-span-2">
                   <label className="block text-xs font-bold text-green-600 uppercase mb-2">Free Shipping Over ₹</label>
                   <input value={freeShippingThreshold} onChange={e => setFreeShippingThreshold(e.target.value.replace(/\D/g, ''))} className="w-full p-4 bg-white rounded-xl border border-green-200 outline-none focus:border-green-500" placeholder="1500" />
                </div>
